@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>clear</title>
+    <link rel="icon" href="favicon.ico" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>AI Image Upscaler</h1>
+
+      <div class="upload-box" id="uploadBox">
+        <input type="file" id="imageInput" hidden />
+        <p>Drag & Drop Image or Click to Upload</p>
+      </div>
+
+      <img id="preview" class="hidden" />
+
+      <div class="controls hidden" id="controls">
+        <button data-scale="2" class="scale-btn active">2x</button>
+        <button data-scale="4" class="scale-btn">4x</button>
+        <button id="upscaleBtn">Upscale</button>
+      </div>
+
+      <div class="loader hidden" id="loader"></div>
+
+      <img id="result" class="hidden" />
+      <a id="downloadBtn" class="hidden" download="upscaled.png">Download</a>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

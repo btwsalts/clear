@@ -1,0 +1,91 @@
+﻿body {
+  margin: 0;
+  font-family: monospace;
+  background: #0f0f0f;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  text-align: center;
+  width: 400px;
+}
+
+.upload-box {
+  border: 2px dashed #444;
+  padding: 40px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: 0.3s;
+}
+
+.upload-box:hover {
+  border-color: #888;
+}
+
+.upload-box.drag-over {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+img {
+  max-width: 100%;
+  margin-top: 20px;
+  border-radius: 10px;
+}
+
+button {
+  margin: 5px;
+  padding: 10px 20px;
+  background: #222;
+  color: white;
+  border: 1px solid #555;
+  cursor: pointer;
+}
+
+button.active {
+  background: white;
+  color: black;
+}
+
+.loader {
+  border: 5px solid #333;
+  border-top: 5px solid white;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin: 20px auto;
+  animation: spin 1s linear infinite;
+}
+
+.hidden {
+  display: none;
+}
+
+a {
+  display: block;
+  margin-top: 15px;
+  color: #00ffcc;
+  text-decoration: none;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+#controls {
+  margin-top: 20px;
+}
+
+.scale-btn {
+  border-radius: 20px;
+}
+
+#upscaleBtn {
+  border-radius: 20px;
+}
