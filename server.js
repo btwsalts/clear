@@ -12,6 +12,9 @@ app.use(express.static("public")); // keep serving frontend
 const upload = multer({ dest: "uploads/" });
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN;
 const GFPGAN_MODEL = "tencentarc/gfpgan";
+const GFPGAN_VERSION =
+  process.env.REPLICATE_GFPGAN_VERSION ||
+  "0fbacf7afc6c144e5be9767cff80f25aff23e52b0708f17e20f9879b2f21516c";
 
 const replicateHeaders = {
   Authorization: `Token ${REPLICATE_API_TOKEN}`,
@@ -33,12 +36,27 @@ app.post("/upscale", upload.single("image"), async (req, res) => {
     const imageData = fs.readFileSync(req.file.path, { encoding: "base64" });
     const image = `data:${req.file.mimetype};base64,${imageData}`;
 
-    const createPrediction = (input) =>
-      axios.post(
-        `https://api.replicate.com/v1/models/${GFPGAN_MODEL}/predictions`,
-        { input },
-        { headers: replicateHeaders },
-      );
+    let endpointFallbackUsed = false;
+    const createPrediction = async (input) => {
+      try {
+        return await axios.post(
+          `https://api.replicate.com/v1/models/${GFPGAN_MODEL}/predictions`,
+          { input },
+          { headers: replicateHeaders },
+        );
+      } catch (createErr) {
+        if (createErr.response?.status !== 404) {
+          throw createErr;
+        }
+
+        endpointFallbackUsed = true;
+        return axios.post(
+          "https://api.replicate.com/v1/predictions",
+          { version: GFPGAN_VERSION, input },
+          { headers: replicateHeaders },
+        );
+      }
+    };
 
     const pollPrediction = async (initialPrediction) => {
       let prediction = initialPrediction;
@@ -65,7 +83,7 @@ app.post("/upscale", upload.single("image"), async (req, res) => {
       return { prediction, pollAttempts, maxPollAttempts };
     };
 
-    let fallbackUsed = false;
+    let compatibilityFallbackUsed = false;
 
     const primaryCreate = await createPrediction({
       img: image,
@@ -82,7 +100,7 @@ app.post("/upscale", upload.single("image"), async (req, res) => {
       prediction.error.toLowerCase().includes("out_path");
 
     if (shouldRetryWithAlternateInput) {
-      fallbackUsed = true;
+      compatibilityFallbackUsed = true;
       const fallbackCreate = await createPrediction({
         image,
         scale,
@@ -102,7 +120,7 @@ app.post("/upscale", upload.single("image"), async (req, res) => {
         return res.status(500).json({ error: "Model returned no output URL" });
       }
 
-      return res.json({ output, fallbackUsed });
+      return res.json({ output, compatibilityFallbackUsed, endpointFallbackUsed });
     }
 
     if (pollAttempts >= maxPollAttempts) {
