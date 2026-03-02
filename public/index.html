@@ -4,7 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>clear</title>
-    <link rel="icon" href="favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg?v=3" />
+    <link rel="icon" type="image/x-icon" href="./favicon.ico?v=3" />
+    <link rel="shortcut icon" type="image/x-icon" href="./favicon.ico?v=3" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -15,7 +17,9 @@
   </head>
   <body class="is-loading">
     <div id="splash" aria-hidden="true">
-      <div class="splash-text">CLEAR<span class="splash-mark">&copy;</span></div>
+      <div class="splash-text">
+        CLEAR<span class="splash-mark">&copy;</span>
+      </div>
     </div>
 
     <main class="container">
@@ -51,15 +55,21 @@
           <div class="media-block">
             <h3>Preview</h3>
             <img id="preview" class="hidden" alt="Selected preview" />
-            <p class="empty-state" id="previewEmpty">Your selected image appears here.</p>
+            <p class="empty-state" id="previewEmpty">
+              Your selected image appears here.
+            </p>
           </div>
 
           <div class="media-block">
             <h3>Result</h3>
             <div class="loader hidden" id="loader"></div>
             <img id="result" class="hidden" alt="Upscaled output" />
-            <p class="empty-state" id="resultEmpty">Upscaled output appears here.</p>
-            <a id="downloadBtn" class="hidden" download="upscaled.png">Download Result</a>
+            <p class="empty-state" id="resultEmpty">
+              Upscaled output appears here.
+            </p>
+            <a id="downloadBtn" class="hidden" download="upscaled.png"
+              >Download Result</a
+            >
           </div>
         </article>
       </section>
