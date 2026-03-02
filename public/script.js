@@ -131,7 +131,9 @@ upscaleBtn.addEventListener("click", async () => {
       resultEmpty.classList.add("hidden");
     }
     if (statusText) {
-      statusText.textContent = "Done. You can download the result now.";
+      statusText.textContent = data.fallbackUsed
+        ? "First attempt failed on the model side, but compatibility retry succeeded. You can download the result now."
+        : "Done. You can download the result now.";
     }
   } catch (error) {
     console.error(error);

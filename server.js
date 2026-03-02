@@ -11,9 +11,7 @@ app.use(express.static("public")); // keep serving frontend
 
 const upload = multer({ dest: "uploads/" });
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN;
-// Latest tencentarc/gfpgan version shown by Replicate (as of 2026-03-01).
-const GFPGAN_VERSION =
-  "0fbacf7afc6c144e5be9767cff80f25aff23e52b0708f17e20f9879b2f21516c";
+const GFPGAN_MODEL = "tencentarc/gfpgan";
 
 const replicateHeaders = {
   Authorization: `Token ${REPLICATE_API_TOKEN}`,
@@ -35,38 +33,64 @@ app.post("/upscale", upload.single("image"), async (req, res) => {
     const imageData = fs.readFileSync(req.file.path, { encoding: "base64" });
     const image = `data:${req.file.mimetype};base64,${imageData}`;
 
-    const createResponse = await axios.post(
-      "https://api.replicate.com/v1/predictions",
-      {
-        version: GFPGAN_VERSION,
-        input: {
-          img: image,
-          scale,
-          version: "v1.4",
-        },
-      },
-      { headers: replicateHeaders },
-    );
-
-    let prediction = createResponse.data;
-    const maxPollAttempts = 90; // about 3 minutes at 2s/poll
-    let pollAttempts = 0;
-
-    while (
-      prediction.status !== "succeeded" &&
-      prediction.status !== "failed" &&
-      prediction.status !== "canceled" &&
-      pollAttempts < maxPollAttempts
-    ) {
-      pollAttempts += 1;
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      const pollResponse = await axios.get(
-        `https://api.replicate.com/v1/predictions/${prediction.id}`,
+    const createPrediction = (input) =>
+      axios.post(
+        `https://api.replicate.com/v1/models/${GFPGAN_MODEL}/predictions`,
+        { input },
         { headers: replicateHeaders },
       );
 
-      prediction = pollResponse.data;
+    const pollPrediction = async (initialPrediction) => {
+      let prediction = initialPrediction;
+      const maxPollAttempts = 90; // about 3 minutes at 2s/poll
+      let pollAttempts = 0;
+
+      while (
+        prediction.status !== "succeeded" &&
+        prediction.status !== "failed" &&
+        prediction.status !== "canceled" &&
+        pollAttempts < maxPollAttempts
+      ) {
+        pollAttempts += 1;
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        const pollResponse = await axios.get(
+          `https://api.replicate.com/v1/predictions/${prediction.id}`,
+          { headers: replicateHeaders },
+        );
+
+        prediction = pollResponse.data;
+      }
+
+      return { prediction, pollAttempts, maxPollAttempts };
+    };
+
+    let fallbackUsed = false;
+
+    const primaryCreate = await createPrediction({
+      img: image,
+      scale,
+      version: "v1.4",
+    });
+    let { prediction, pollAttempts, maxPollAttempts } = await pollPrediction(
+      primaryCreate.data,
+    );
+
+    const shouldRetryWithAlternateInput =
+      prediction.status === "failed" &&
+      typeof prediction.error === "string" &&
+      prediction.error.toLowerCase().includes("out_path");
+
+    if (shouldRetryWithAlternateInput) {
+      fallbackUsed = true;
+      const fallbackCreate = await createPrediction({
+        image,
+        scale,
+      });
+      const fallbackResult = await pollPrediction(fallbackCreate.data);
+      prediction = fallbackResult.prediction;
+      pollAttempts = fallbackResult.pollAttempts;
+      maxPollAttempts = fallbackResult.maxPollAttempts;
     }
 
     if (prediction.status === "succeeded") {
@@ -78,7 +102,7 @@ app.post("/upscale", upload.single("image"), async (req, res) => {
         return res.status(500).json({ error: "Model returned no output URL" });
       }
 
-      return res.json({ output });
+      return res.json({ output, fallbackUsed });
     }
 
     if (pollAttempts >= maxPollAttempts) {
