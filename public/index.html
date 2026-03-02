@@ -5,30 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>clear</title>
     <link rel="icon" href="favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body>
-    <div class="container">
-      <h1>AI Image Upscaler</h1>
-
-      <div class="upload-box" id="uploadBox">
-        <input type="file" id="imageInput" hidden />
-        <p>Drag & Drop Image or Click to Upload</p>
-      </div>
-
-      <img id="preview" class="hidden" />
-
-      <div class="controls hidden" id="controls">
-        <button data-scale="2" class="scale-btn active">2x</button>
-        <button data-scale="4" class="scale-btn">4x</button>
-        <button id="upscaleBtn">Upscale</button>
-      </div>
-
-      <div class="loader hidden" id="loader"></div>
-
-      <img id="result" class="hidden" />
-      <a id="downloadBtn" class="hidden" download="upscaled.png">Download</a>
+  <body class="is-loading">
+    <div id="splash" aria-hidden="true">
+      <div class="splash-text">CLEAR<span class="splash-mark">&copy;</span></div>
     </div>
+
+    <main class="container">
+      <header class="hero">
+        <p class="eyebrow">Clear Studio</p>
+        <h1>Upscale Your Images with Precision</h1>
+        <p class="subtitle">
+          Drop an image, choose 2x or 4x, and get a sharper result in seconds.
+        </p>
+      </header>
+
+      <section class="workspace">
+        <article class="panel control-panel">
+          <h2>Upload</h2>
+          <div class="upload-box" id="uploadBox">
+            <input type="file" id="imageInput" hidden />
+            <p id="uploadHint">Drag and drop your image or click to browse</p>
+            <span class="upload-meta">PNG, JPG, WEBP</span>
+          </div>
+
+          <div class="controls hidden" id="controls">
+            <div class="scale-group">
+              <button data-scale="2" class="scale-btn active">2x</button>
+              <button data-scale="4" class="scale-btn">4x</button>
+            </div>
+            <button id="upscaleBtn">Upscale Image</button>
+          </div>
+
+          <p id="statusText" class="status-text">Choose an image to begin.</p>
+        </article>
+
+        <article class="panel preview-panel">
+          <div class="media-block">
+            <h3>Preview</h3>
+            <img id="preview" class="hidden" alt="Selected preview" />
+            <p class="empty-state" id="previewEmpty">Your selected image appears here.</p>
+          </div>
+
+          <div class="media-block">
+            <h3>Result</h3>
+            <div class="loader hidden" id="loader"></div>
+            <img id="result" class="hidden" alt="Upscaled output" />
+            <p class="empty-state" id="resultEmpty">Upscaled output appears here.</p>
+            <a id="downloadBtn" class="hidden" download="upscaled.png">Download Result</a>
+          </div>
+        </article>
+      </section>
+    </main>
 
     <script src="script.js"></script>
   </body>
